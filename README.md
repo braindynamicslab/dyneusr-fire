@@ -23,16 +23,18 @@ To get started, check out the [examples](https://github.com/braindynamicslab/dyn
 ### **_Basic Usage_** 
 
 ```bash
-dyneusr-fire load_data --X=trefoil.npy - run_mapper --resolution=10 --gain=0.2 - visualize
+dyneusr-fire load_example --size=500 - run_mapper --projection=PCA(2) --resolution=10 --gain=0.5 - visualize
 ```
 
 
 ### **_Interactive Mode_** 
 
+You can run the following from the command line:
 ```bash
-dyneusr-fire load_data init -- --interactive
+$ dyneusr-fire init -- --interactive
 ```
 
+This will open an IPython shell.
 ```python
 Fire is starting a Python REPL with the following objects:
 Modules: fire, np, pd
@@ -45,30 +47,24 @@ IPython 7.3.0 -- An enhanced Interactive Python. Type '?' for help.
 In [1]:                                                               
 ```
 
+Then, you can step through the pipeline:
 ```python
 In [1]: pipeline = DyNeuSR()
-```
 
-```python
-In [2]: pipeline.load_example()
-```
+In [2]: pipeline.load_data(X='trefoil.npy', y='trefoil-target.npy')
 
-```python
-In [3]: pipeline.run_mapper()
-```
+In [3]: pipeline.run_mapper(projection=PCA(2), resolution=10, gain=0.5, clusterer=DBSCAN())
 
-```python
 In [4]: pipeline.visualize()
 
 ```
 
-Or, all together:
-
+Or, run it all at once:
 ```python
-In [1]: DyNeuSR().load_example().run_mapper().visualize()
+In [1]: DyNeuSR().load_example().run_mapper(projection=PCA(2), resolution=10, gain=0.5, clusterer=DBSCAN()).visualize()
 ```
 
-Note, in the examples above, `load_example` can be replaced with `load_data` to load your own data.
+Note, in the examples above, `load_example` is used for demo purposes only. You can replace `load_example` with `load_data` and load your own data by passing the file names of your data and target labels to the `X` and `y` arguments, respectively.
 
 
 
