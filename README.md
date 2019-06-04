@@ -24,7 +24,7 @@ To get started, check out the [examples](https://github.com/braindynamicslab/dyn
 
 You can run the entire pipeline from the command line:
 ```bash
-dyneusr-fire load_example --size=500 - run_mapper --projection=PCA(2) --resolution=10 --gain=0.5 - visualize
+$ dyneusr-fire load_example --size=500 - run_mapper --projection=PCA(2) --resolution=10 --gain=0.5 - visualize
 ```
 
 
@@ -90,6 +90,14 @@ Note, in the examples above, `load_example` is used for demo purposes only. You 
 _To install with pip:_
 ```bash
 pip install dyneusr-fire
+```
+
+_To install from source:_
+```bash
+git clone https://github.com/braindynamicslab/dyneusr-fire.git
+cd dyneusr-fire
+
+pip install -e .
 ```
 
 
