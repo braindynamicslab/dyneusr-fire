@@ -129,7 +129,7 @@ class DyNeuSR(object):
         graph = mapper.map(
             lens, self.X, 
             cover=self._cover, 
-            clusterer=self._cluster
+            clusterer=self._clusterer
         )
 
         # Store results

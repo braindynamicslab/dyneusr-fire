@@ -33,6 +33,45 @@ dyneusr-fire load_data --X=trefoil.npy - run_mapper --resolution=10 --gain=0.2 -
 dyneusr-fire load_data init -- --interactive
 ```
 
+```python
+Fire is starting a Python REPL with the following objects:
+Modules: fire, np, pd
+Objects: Bunch, Cover, DBSCAN, DyNeuGraph, DyNeuSR, HDBSCAN, KMeans, KeplerMapper, MinMaxScaler, PCA, StandardScaler, TSNE, UMAP, check_estimator, component, f, result, self, trace
+
+Python 3.7.2 | packaged by conda-forge | (default, Mar 19 2019, 20:46:22) 
+Type 'copyright', 'credits' or 'license' for more information
+IPython 7.3.0 -- An enhanced Interactive Python. Type '?' for help.
+
+In [1]:                                                               
+```
+
+```python
+In [1]: pipeline = DyNeuSR()
+```
+
+```python
+In [2]: pipeline.load_example()
+```
+
+```python
+In [3]: pipeline.run_mapper()
+```
+
+```python
+In [4]: pipeline.visualize()
+
+```
+
+Or, all together:
+
+```python
+In [1]: DyNeuSR().load_example().run_mapper().visualize()
+```
+
+Note, in the examples above, `load_example` can be replaced with `load_data` to load your own data.
+
+
+
 
 ## **Setup**
 
