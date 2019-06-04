@@ -12,7 +12,7 @@ with open('README.md') as f:
 # run setup
 setup(
     name='dyneusr-fire',
-    version='0.0.3',
+    version='0.0.4.dev',
     scripts=['dyneusr-fire'],
     description='A command line interface for DyNeuSR',
     long_description=long_description,
