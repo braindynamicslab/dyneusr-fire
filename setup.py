@@ -12,7 +12,7 @@ with open('README.md') as f:
 # run setup
 setup(
     name='dyneusr-fire',
-    version='0.0.2',
+    version='0.0.3',
     scripts=['dyneusr-fire'],
     description='A command line interface for DyNeuSR',
     long_description=long_description,
@@ -22,6 +22,7 @@ setup(
     url='https://braindynamicslab.github.io/dyneusr-fire',
     license='BSD-3',
     packages=find_packages(),
+    include_package_data=True,
     install_requires=install_requires,
     python_requires='>=3.6',
     classifiers=[
