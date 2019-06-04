@@ -15,7 +15,7 @@ A command line interface for [DyNeuSR](https://braindynamicslab.github.io/dyneus
 
 ## **Usage**
 
-[DyNeuSR Fire](https://braindynamicslab.github.io/dyneusr-fire) provides a command line interface that wraps [`kmapper`](kepler-mapper.scikit-tda.org) graph generation and [`dyneusr`](https://braindynamicslab.github.io/dyneusr) visualization into a single executable. It uses the [`python-fire`](https://github.com/google/python-fire) library to automatically generate a simple command line interface that accepts several important options and allows users to customize this pipeline.
+[DyNeuSR Fire](https://braindynamicslab.github.io/dyneusr-fire/) provides a command line interface for DyNeuSR. It wraps `kmapper` and `dyneusr` into a single pipeline, and uses the [Python Fire](https://github.com/google/python-fire) library to automatically generate a simple command line interface that accepts several important options and allows users to customize this pipeline. For more information about DyNeuSR, check out the [docs](https://braindynamicslab.github.io/dyneusr/).
 
 To get started, check out the [examples](https://github.com/braindynamicslab/dyneusr-fire/tree/master/examples/), or try running one of the commands below on your own data.
 
