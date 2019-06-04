@@ -22,6 +22,7 @@ To get started, check out the [examples](https://github.com/braindynamicslab/dyn
 
 ### **_Basic Usage_** 
 
+You can run the entire pipeline from the command line:
 ```bash
 dyneusr-fire load_example --size=500 - run_mapper --projection=PCA(2) --resolution=10 --gain=0.5 - visualize
 ```
@@ -29,7 +30,7 @@ dyneusr-fire load_example --size=500 - run_mapper --projection=PCA(2) --resoluti
 
 ### **_Interactive Mode_** 
 
-You can run the following from the command line:
+To run in interactive mode, you can run the following from the command line:
 ```bash
 $ dyneusr-fire init -- --interactive
 ```
