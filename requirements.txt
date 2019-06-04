@@ -1,6 +1,6 @@
 fire
 dyneusr
 kmapper
-sklearn
+scikit-learn
 umap-learn
 hdbscan
