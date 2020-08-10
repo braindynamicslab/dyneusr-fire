@@ -3,14 +3,20 @@
 import numpy as np
 import pandas as pd
 from sklearn.datasets.base import Bunch
+from sklearn import preprocessing
+from sklearn import decomposition
+from sklearn import manifold
+from sklearn import cluster
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
-from sklearn.cluster import KMeans, DBSCAN
 from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
+from sklearn.manifold import TSNE, Isomap, MDS
+from sklearn.cluster import KMeans, DBSCAN
 from umap.umap_ import UMAP
 from hdbscan import HDBSCAN
 from kmapper import KeplerMapper, Cover
 from dyneusr import DyNeuGraph
+
+from nilearn.input_data import NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker
 
 
 def check_estimator(estimator):
@@ -28,10 +34,122 @@ def check_estimator(estimator):
     return estimator
 
 
+def check_array_from_file(fp, drop_nan=True):
+    """Check file and load data, drop missing rows,  columns.
+    """
+    if not isinstance(fp, str):
+        return fp
+
+    print("Loading data from file:", fp)
+    d = None
+    if str(fp).endswith('.npy'):
+        d = np.load(fp)
+    elif str(fp).endswith('.npz'):
+        d = np.loadz(fp)
+        d = d[list(d.keys())[0]]
+    elif str(fp).endswith('.tsv'):
+        d = pd.read_table(fp)
+    elif str(fp).endswith('.csv'):
+        d = pd.read_csv(fp)
+    elif str(fp).endswith('.txt'):
+        d = np.genfromtxt(fp)
+    elif str(fp).endswith('.nii') or str(fp).endswith('.nii.gz'):
+        from nilearn.input_data import NiftiMasker
+        d = NiftiMasker().fit_transform(fp)
+        #d = d[:, np.var(d, axis=0) > 0] # drop zero-variance columns
+    else:
+        print('Data format not recognized ...')
+        print('Please use an accepted format:')
+        print('\t.npy')
+        print('\t.npz')
+        print('\t.tsv')
+        print('\t.csv')
+        print('\t.txt')
+        print('\t.nii')
+        print('\t.nii.gz')
+    
+    if drop_nan:
+        d = d[:, ~np.all(np.isnan(d), axis=0)]
+        d = d[~np.all(np.isnan(d), axis=1), :]
+    
+    return d
+
+
+
 class DyNeuSR(object):
+
+    def __init__(self):
+        self.dataset = Bunch(data=None, labels=None)
+        self.X = None
+        self.y = None
+
 
     def init(self):
         return self
+
+
+    def mask_nifti(self, 
+                   func=None,
+                   labels_img=None,
+                   mask_img=None,
+                   detrend=True,        # True
+                   smoothing_fwhm=None, # 4.0
+                   low_pass=None,       # 0.09 
+                   high_pass=None,      # 0.008 
+                   t_r=None,            # 2.5
+                   standardize=True,    # True
+                   memory="nilearn_cache",
+                   save_as=None): 
+        """Load the data.
+
+        Parameters
+        ----------
+        func : str
+            Filename of 4D nifti img of functional data.
+
+        labels_img : str, optional
+            Filename of 3D nifti img for masking from regions of interest.
+
+        mask_img : str, optional
+            Filename of 3D nifti img for masking.
+
+        """
+        # Initialize masker object
+        if labels_img is not None:
+            self.masker = NiftiLabelsMasker(
+                   labels_img=labels_img,
+                   mask_img=mask_img,
+                   detrend=detrend,        
+                   smoothing_fwhm=smoothing_fwhm,
+                   low_pass=low_pass,             
+                   high_pass=high_pass,          
+                   t_r=t_r,                      
+                   standardize=standardize,    
+                   memory=memory,
+                )
+        else:
+            self.masker = NiftiMasker(
+                   mask_img=mask_img,
+                   detrend=detrend,        
+                   smoothing_fwhm=smoothing_fwhm,
+                   low_pass=low_pass,             
+                   high_pass=high_pass,          
+                   t_r=t_r,                      
+                   standardize=standardize,    
+                   memory=memory,
+                )
+        
+        # Mask functional data
+        self.X = self.masker.fit_transform(func)
+        
+        # Save as numpy file
+        if save_as:
+            np.save(save_as, self.X)
+
+        # Update dataset object
+        self.dataset.data = self.X
+        return self
+
 
     def load_data(self, X=None, y=None): 
         """Load the data.
@@ -45,40 +163,16 @@ class DyNeuSR(object):
             Filename of meta data to load.
 
         """
-        # Helper functions
-        def check_array_from_file(fp):
-            print("Loading data from file:", fp)
-            d = None
-            if str(fp).endswith('.npy'):
-                d = np.load(fp)
-            elif str(fp).endswith('.npz'):
-                d = np.loadz(fp)
-                d = d[list(d.keys())[0]]
-            elif str(fp).endswith('.tsv'):
-                d = pd.read_table(fp)
-            elif str(fp).endswith('.csv'):
-                d = pd.read_csv(fp)
-            elif str(fp).endswith('.txt'):
-                d = np.genfromtxt(fp)
-            else:
-                print('Data format not recognized ...')
-                print('Please use an accepted format:')
-                print('\t.npy')
-                print('\t.npz')
-                print('\t.tsv')
-                print('\t.csv')
-                print('\t.txt')
-            return d
+        # Load the data from file.
+        if X is not None:
+            self.X = check_array_from_file(X)
+            self.dataset.data = self.X 
 
-        # Load the data from a file.
-        X = check_array_from_file(X)
-        y = check_array_from_file(y)
-        dataset = Bunch(data=X, target=y)
+        # Load the labels from file.
+        if y is not None:
+            self.y = check_array_from_file(y)
+            self.dataset.labels = self.y
 
-        # Store as variables
-        self.dataset = dataset
-        self.X = X
-        self.y = y
         return self
 
 
@@ -93,21 +187,20 @@ class DyNeuSR(object):
         # Generate synthetic dataset (for now)
         from dyneusr.datasets import make_trefoil
         dataset = make_trefoil(size=size)
-        X = dataset.data
-        y = dataset.target
+        self.X = dataset.data
+        self.y = dataset.target
 
-        # Store variables
-        self.dataset = dataset
-        self.X = X
-        self.y = y 
+        # Update dataset object
+        self.dataset.data = self.X
+        self.dataset.labels = self.y
         return self
 
 
     def run_mapper(self, 
-               projection=TSNE(2),
+               projection=Isomap(n_components=2, n_neighbors=5),
                scaler=MinMaxScaler(),
-               resolution=6, gain=0.2, 
-               clusterer=KMeans(2),
+               resolution=20, gain=0.4, 
+               clusterer=KMeans(n_clusters=2),
                verbose=1):
         """Run KeplerMapper.
         """
@@ -121,24 +214,21 @@ class DyNeuSR(object):
         self._clusterer = check_estimator(clusterer)
 
         # Run kmapper
-        lens = mapper.fit_transform(
+        self.lens = mapper.fit_transform(
             self.X, 
             projection=self._projection, 
             scaler=self._scaler
         )
-        graph = mapper.map(
-            lens, self.X, 
+        self.graph = mapper.map(
+            self.lens, self.X, 
             cover=self._cover, 
             clusterer=self._clusterer
         )
-
-        # Store results
-        self.lens = lens
-        self.graph = graph
         return self
 
 
     def visualize(self, 
+                  labels=None,
                   save_as='dyneusr_output.html',
                   template=None,
                   static=True, 
@@ -146,18 +236,21 @@ class DyNeuSR(object):
                   port=None):
         """Visualize the graph using DyNeuSR
         """
+        # Check for labels, use self.y if non provided
+        if labels is not None:
+            self.load_data(y=labels)
+        elif self.y is None:
+            self.load_data(y=np.arange(len(self.X)))
+
         # Visualize the shape graph using DyNeuSR's DyNeuGraph 
-        dG = DyNeuGraph(G=self.graph, y=self.y)
-        dG.visualize(
+        self.dG = DyNeuGraph(G=self.graph, y=self.y)
+        self.dG.visualize(
             save_as, 
             template=template,
             static=static,
             show=show,
             port=port
-        )
-        
-        # Store the results
-        self.dG = dG
+        )        
         return self
 
 

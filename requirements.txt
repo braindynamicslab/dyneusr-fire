@@ -4,3 +4,4 @@ kmapper
 scikit-learn
 umap-learn
 hdbscan
+nilearn
